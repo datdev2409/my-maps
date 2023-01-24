@@ -2,6 +2,15 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Installation
+1. Clones project repository
+2. Creates google map api keys. [Instruction](https://developers.google.com/maps/documentation/javascript/get-api-key)
+3. Creates file google_api_key.js in /src/config folder with the following content.\
+`export const GOOGLE_MAP_API_KEY = "<put your google map api key created in step 2 here"`
+4. Runs the app in the development mode.\
+`npm start`
+
+
 ## Available Scripts
 
 In the project directory, you can run:

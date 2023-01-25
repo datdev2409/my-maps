@@ -1,62 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {Search} from 'react-feather'
+import { MAPBOX_API_KEY } from '../config/api_key'
 
-function PlaceInput({setCenter}) {
-    const ref = useRef(null)
-    const [autoCompleteWidget, setAutoCompleteWidget] = useState(null)
-
-    const onPlaceChanged = () => {
-        const place = autoCompleteWidget.getPlace()
-
-        // Reset input if user don't select any place in dropdown
-        if (!place.geometry) {
-            const map = document.createElement('div')
-            const request = {
-                query: place.name,
-                fields: ['name', 'geometry']
-            }
-            const service = new window.google.maps.places.PlacesService(map)
-            service.textSearch(request, (results, status) => {
-                if (status == window.google.maps.places.PlacesServiceStatus.OK) {
-                    console.log(results)
-                }
-            })
-        }
-        else {
-            const lat = place.geometry.location.lat()
-            const lng = place.geometry.location.lng()
-            setCenter({lat, lng})
-        }
-
-    }
+export default function PlaceInput() {
+    const inputRef = useRef(null)
+    const [input, setInput] = useState("")
 
     useEffect(() => {
-        if (ref.current && !autoCompleteWidget) {
-            setAutoCompleteWidget(
-                new window.google.maps.places.Autocomplete(ref.current, {})
-            )
-        }
+        if (input.length <= 5 || input.length % 2 == 0) return
+        const baseURL = 'https://api.mapbox.com'
+        const url = new URL(`/geocoding/v5/mapbox.places/${input}.json`, baseURL)
+        url.searchParams.set("access_token", MAPBOX_API_KEY)
+        url.searchParams.set("limit", 3)
 
-        if (autoCompleteWidget) {
-            autoCompleteWidget.addListener("place_changed", onPlaceChanged)
-        }
-    }, [ref, autoCompleteWidget])
-
+        fetch(url.toString())
+            .then(res => res.json())
+            .then(data => console.log(data))
+    }, [input])
     return (
-        <div className="place-search">
+        <div style={{position: "fixed", zIndex: 10, top: 0, left: 0}}>
             <input
-                className="place-search-input"
-                placeholder='Enter a place'
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 type="text"
-                ref={ref} 
-            />
-            <Search
-                className='place-search-icon'
-                color='grey'
-                size={18}
             />
         </div>
     )
 }
-
-export default PlaceInput

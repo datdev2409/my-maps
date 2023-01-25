@@ -1,30 +1,56 @@
-import { Wrapper, Status } from '@googlemaps/react-wrapper'
-import Map from './components/Map';
-import { useState } from 'react';
+import React, {useState, useRef, useEffect} from 'react'
+import mapboxgl from 'mapbox-gl'
+import { MAPBOX_API_KEY } from './config/api_key'
 import PlaceInput from './components/PlaceInput';
-import PlaceSuggestList from './components/PlaceSuggestList';
-import { GOOGLE_MAP_API_KEY } from './config/google_api_key';
 
-const render = (status) => {
-	const handler = {
-		[Status.LOADING]: () => <h1>Loading</h1>,
-		[Status.FAILURE]: () => <h1>There is an error occured</h1>,
-		[Status.SUCCESS]: () => <h1>Success</h1>
+mapboxgl.accessToken = MAPBOX_API_KEY
+
+export default function App() {
+	const mapContainer = useRef(null);
+	const map = useRef(null);
+	const markers = useRef([])
+	const [lng, setLng] = useState(-70.9);
+	const [lat, setLat] = useState(42.35);
+	const [zoom, setZoom] = useState(9);
+
+	const handleMapClick = (e) => {
+		if (!map.current) return
+		const marker = new mapboxgl.Marker()
+			.setLngLat(e.lngLat)
+			.setPopup(new mapboxgl.Popup().setHTML(`<p>Pinned!!</p>`))
+			.addTo(map.current)
+		
+		marker.togglePopup()
+		
+		markers.current.push(marker)
 	}
 
-	return handler[status]()
-};
 
-function App() {
-	const [center, setCenter] = useState({ lat: -34.397, lng: 150.644 })
+	useEffect(() => {
+		if (map.current) return
+		const mapConfig = {
+			container: mapContainer.current,
+			style: 'mapbox://styles/mapbox/streets-v12',
+			center: [lng, lat],
+			zoom: zoom
+		}
+		// Create new map
+		map.current = new mapboxgl.Map(mapConfig)
+
+		// Add click event handler in map
+		map.current.on("click", handleMapClick)
+	}, [])
+
+	useEffect(() => {
+		if (!map.current) return
+		map.current.setCenter([lng, lat])
+	}, [lng, lat, zoom])
 
 	return (
-		<Wrapper apiKey={GOOGLE_MAP_API_KEY} render={render} libraries={["places"]}>
-			<PlaceInput setCenter={setCenter}/>
-			<PlaceSuggestList />
-			<Map center={center} />
-		</Wrapper>
-	);
-}
+		<div>
+			<PlaceInput />
+			<div className='map-container' ref={mapContainer}></div>
+		</div>
+	)
 
-export default App;
+}

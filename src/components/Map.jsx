@@ -1,33 +1,31 @@
-import { useEffect, useState } from 'react';
-import useMap from '../hooks/useMap';
-import goongJs from '@goongmaps/goong-js';
+import { useEffect, useState } from "react"
+import useMap from "../hooks/useMap"
+import { createMarker, createPopup, setMarkerPopup } from "../api/mapAPI"
+import useMapContext from "../hooks/useMapContext"
 
-export default function Map({center}) {
-    const mapRef = useMap({center: center})
-    const [zoom, setZoom] = useState(15)
+export default function Map() {
+  const mapRef = useMap()
+  const [state, dispatch] = useMapContext()
 
+  useEffect(() => {
+    if (!mapRef.current) return
 
-    useEffect(() => {
-        console.log("run at first")
-        if (!mapRef.current) return
-        mapRef.current.flyTo({zoom ,center})
+    // When center change, change viewport
+    const zoom = state.mapOptions.zoom
+    const centerLngLat = state.place.location
+    mapRef.current.flyTo({ zoom, center: centerLngLat })
 
-        const marker = new goongJs.Marker()
-            .setLngLat(center)
-            .addTo(mapRef.current);
+    // Create marker in the center of viewport
+    const marker = createMarker(mapRef.current, centerLngLat)
 
-        return () => {
-            marker.remove()
-        }
+    // const popup = createPopup()
+    // setMarkerPopup(marker, popup)
 
-    }, [zoom, center])
+    // Clear marker when center change
+    return () => {
+      marker.remove()
+    }
+  }, [state, dispatch])
 
-
-    return (
-        <div>
-            <div id="map"></div>
-            <button onClick={() => setZoom(zoom + 1)}>Zoom in</button>
-            <button onClick={() => setZoom(zoom - 1)}>Zoom out</button>
-        </div>
-    )
+  return <div id="map"></div>
 }

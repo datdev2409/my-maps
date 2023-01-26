@@ -23,5 +23,5 @@ yarn-debug.log*
 yarn-error.log*
 
 # Ignore google map api key file
-/src/config/google_api_key.js
+/src/config/key.js
 

@@ -1,60 +1,52 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {Search} from 'react-feather'
+import {Search, MapPin} from 'react-feather'
+import { GOONG_API_KEY } from '../config/key'
+import useDeboucing from '../hooks/useDeboucing'
+import PlaceSuggestItem from './PlaceSuggestItem'
 
 function PlaceInput({setCenter}) {
-    const ref = useRef(null)
-    const [autoCompleteWidget, setAutoCompleteWidget] = useState(null)
-
-    const onPlaceChanged = () => {
-        const place = autoCompleteWidget.getPlace()
-
-        // Reset input if user don't select any place in dropdown
-        if (!place.geometry) {
-            const map = document.createElement('div')
-            const request = {
-                query: place.name,
-                fields: ['name', 'geometry']
-            }
-            const service = new window.google.maps.places.PlacesService(map)
-            service.textSearch(request, (results, status) => {
-                if (status == window.google.maps.places.PlacesServiceStatus.OK) {
-                    console.log(results)
-                }
-            })
-        }
-        else {
-            const lat = place.geometry.location.lat()
-            const lng = place.geometry.location.lng()
-            setCenter({lat, lng})
-        }
-
-    }
+    const [query, setQuery] = useState('')
+    const [suggestions, setSuggestions] = useState([])
+    const deboucingQuery = useDeboucing(query)
 
     useEffect(() => {
-        if (ref.current && !autoCompleteWidget) {
-            setAutoCompleteWidget(
-                new window.google.maps.places.Autocomplete(ref.current, {})
-            )
+        const BASE_URL = "https://rsapi.goong.io"
+        const url = new URL("/Place/AutoComplete", BASE_URL)
+        url.searchParams.set("api_key", GOONG_API_KEY)
+        url.searchParams.set("input", deboucingQuery)
+        url.searchParams.set("limit", 5)
+
+        if (deboucingQuery.length >= 0) {
+            fetch(url)
+                .then(res => res.json())
+                .then(data => setSuggestions(data?.predictions ?? []))
         }
 
-        if (autoCompleteWidget) {
-            autoCompleteWidget.addListener("place_changed", onPlaceChanged)
-        }
-    }, [ref, autoCompleteWidget])
+    }, [deboucingQuery])
+
+    const renderSuggestionItem = (suggestion) => {
+        const { place_id } = suggestion
+        return (
+            <PlaceSuggestItem
+                key={place_id}
+                setCenter={setCenter}
+                suggestion={suggestion}
+            />
+        )
+    }
 
     return (
-        <div className="place-search">
+        <div className='place-search'>
+            <Search size={18} className='place-search-icon' />
             <input
-                className="place-search-input"
-                placeholder='Enter a place'
-                type="text"
-                ref={ref} 
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                className='place-search-input'
             />
-            <Search
-                className='place-search-icon'
-                color='grey'
-                size={18}
-            />
+
+            <ul className='suggest-list'>
+                {suggestions.map(renderSuggestionItem)}
+            </ul>
         </div>
     )
 }

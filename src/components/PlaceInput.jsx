@@ -1,41 +1,37 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Search, MapPin } from "react-feather"
-import { GOONG_API_KEY } from "../config/key"
 import useDeboucing from "../hooks/useDeboucing"
 import PlaceSuggestItem from "./PlaceSuggestItem"
+import { getAutocompleteData } from "../services/searchService"
+import useClickOutside from "../hooks/useClickOutside"
+import useClickInside from "../hooks/useClickInside"
 
-function PlaceInput({ setCenter }) {
+function PlaceInput() {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState([])
+  const [isAutocompleOpen, setAutocompleteOpen] = useState(false)
   const deboucingQuery = useDeboucing(query)
+  const inputRef = useRef(null)
+
+  useClickOutside(inputRef, () => {
+    setAutocompleteOpen(false)
+  })
+
+  useClickInside(inputRef, () => {
+    setAutocompleteOpen(true)
+  })
 
   useEffect(() => {
-    const BASE_URL = "https://rsapi.goong.io"
-    const url = new URL("/Place/AutoComplete", BASE_URL)
-    url.searchParams.set("api_key", GOONG_API_KEY)
-    url.searchParams.set("input", deboucingQuery)
-    url.searchParams.set("limit", 5)
-
-    if (deboucingQuery.length >= 0) {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => setSuggestions(data?.predictions ?? []))
-    }
+    if (deboucingQuery.length > 0) {
+      getAutocompleteData(deboucingQuery).then(data => {
+        setSuggestions(data?.predictions ?? [])
+        setAutocompleteOpen(true)
+      })
+    } else setSuggestions([])
   }, [deboucingQuery])
 
-  const renderSuggestionItem = suggestion => {
-    const { place_id } = suggestion
-    return (
-      <PlaceSuggestItem
-        key={place_id}
-        setCenter={setCenter}
-        suggestion={suggestion}
-      />
-    )
-  }
-
   return (
-    <div className="place-search">
+    <div ref={inputRef} className="place-search">
       <Search size={18} className="place-search-icon" />
       <input
         value={query}
@@ -43,7 +39,13 @@ function PlaceInput({ setCenter }) {
         className="place-search-input"
       />
 
-      <ul className="suggest-list">{suggestions.map(renderSuggestionItem)}</ul>
+      {isAutocompleOpen && (
+        <ul className="suggest-list">
+          {suggestions.map((suggestion, index) => {
+            return <PlaceSuggestItem key={index} suggestion={suggestion} />
+          })}
+        </ul>
+      )}
     </div>
   )
 }

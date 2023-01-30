@@ -8,7 +8,8 @@ const initialState = {
         location: {lat: 10.032067, lng: 105.781117},
         types: ['station'],
         place_id: "PPDmkatJq4F7qlNcsGWv8ES1bhiBe6fyT4NqfrNrleAfgXZns1SenHyAYluweiD7c7hUv65QF-5zkWItqWlUgHz5qxazLDGG1ffhPW5lpmbl8hlwPrw-DmX6JVCSZDuLZ"
-    }
+    },
+    pinnedPlaces: []
 }
 
 export default initialState

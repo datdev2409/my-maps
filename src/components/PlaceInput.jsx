@@ -41,9 +41,13 @@ function PlaceInput() {
 
       {isAutocompleOpen && (
         <ul className="suggest-list">
-          {suggestions.map((suggestion, index) => {
-            return <PlaceSuggestItem key={index} suggestion={suggestion} />
-          })}
+          {suggestions.map((suggestion, index) => (
+            <PlaceSuggestItem
+              key={index}
+              setQuery={setQuery}
+              suggestion={suggestion}
+            />
+          ))}
         </ul>
       )}
     </div>

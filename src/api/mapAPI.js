@@ -4,25 +4,22 @@ import PlaceInfo from "../components/PlaceInfo";
 
 goongJs.accessToken = GOONG_MAPTILES_KEY
 
-export function createMarker(map, lngLat = [107.6416527, 11.295036]) {
+export function createMarker(map, lngLat, options) {
     if (!map instanceof goongJs.Map) return;
-    const marker = new goongJs.Marker()
-        .setLngLat(lngLat)
+    const marker = new goongJs.Marker(options)
+        .setLngLat(lngLat ?? [107.6416527, 11.295036])
         .addTo(map)
     
     return marker
 }
 
-export function createPopup(htmlString) {
+export function createPopup() {
     const popup = new goongJs.Popup()
-        .setHTML(htmlString)
-        .setMaxWidth("800px")
-        // .addClassName("popup")
-    
     return popup
 }
 
 export function createMap(config) {
+    console.log("create map");
     const map = new goongJs.Map({
         container: 'map',
         style: 'https://tiles.goong.io/assets/goong_light_v2.json',

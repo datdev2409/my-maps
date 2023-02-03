@@ -2,18 +2,18 @@ import { Search, MapPin } from "react-feather"
 import useMapContext from "../hooks/useMapContext"
 import { CHANGE_FOCUS_PLACE, CHANGE_MAP_OPTIONS } from "../store/constant"
 import { getDetailPlace } from "../services/searchService"
+import { useActivePlaceContext } from "../contexts/ActivePlaceContext"
 
-function PlaceSuggestItem({ suggestion }) {
+function PlaceSuggestItem({ suggestion, setQuery }) {
   const { place_id } = suggestion
   const { main_text, secondary_text } = suggestion?.structured_formatting
-  const [state, dispatch] = useMapContext()
+  const [activePlace, setActivePlace] = useActivePlaceContext()
 
+  const displayText = main_text + " " + secondary_text
   const changeFocusPlace = async () => {
     const placeData = await getDetailPlace(place_id)
-    dispatch({
-      type: CHANGE_FOCUS_PLACE, 
-      data: placeData
-    })
+    setQuery(displayText)
+    setActivePlace(placeData)
   }
 
   return (

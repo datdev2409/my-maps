@@ -1,31 +1,50 @@
-import { useEffect } from "react"
-import PlaceDetail from "./components/PlaceDetail"
-import PlaceInput from "./components/PlaceInput"
-import PlaceSumary from "./components/PlaceSumary"
-import { Map } from "./components/Map"
-import { ActivePlaceProvider } from "./contexts/ActivePlaceContext"
-import MarkerList from "./components/MarkerList"
-import { SavedPlacesProvider } from "./contexts/SavedPlacesContext"
-import { useUserContext } from "./contexts/UserContext"
-import { redirect, useNavigate } from "react-router-dom"
+import { Container } from "react-bootstrap"
+import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom"
+
+import Login from "./pages/LoginPage/"
+import RegisterPage from "./pages/RegisterPage"
+import MapPage from "./pages/MapPage/"
+import PlaceDetailPage, {
+  loader as placeDetailLoader,
+} from "./pages/PlaceDetailPage"
+import configAxios from "./config/axiosConfig"
+import MapLayout from "./layouts/MapLayout/MapLayout"
+
+configAxios()
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <MapLayout />,
+    children: [
+      {
+        index: true,
+      },
+      {
+        path: "place/:query/:placeId",
+        element: <PlaceDetailPage />,
+        loader: placeDetailLoader,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
+])
 
 function App() {
+  return <RouterProvider router={router} />
+}
+
+function DefaultLayout() {
   return (
-    <SavedPlacesProvider>
-      <ActivePlaceProvider>
-        <div className="container">
-          <div className="sidebar">
-            <PlaceInput />
-            <PlaceSumary />
-          </div>
-          <div className="content">
-            <Map>
-              <MarkerList />
-            </Map>
-          </div>
-        </div>
-      </ActivePlaceProvider>
-    </SavedPlacesProvider>
+    <Container fluid className="vh-100 p-0">
+      <Outlet />
+    </Container>
   )
 }
 

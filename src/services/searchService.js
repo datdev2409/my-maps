@@ -16,35 +16,9 @@ export async function getAutocompleteData(query, limit = 5) {
         api_key: GOONG_API_KEY,
       },
     })
-    return data.data
+    return data?.data?.predictions || []
   } catch (error) {
     console.log(error)
     return []
-  }
-}
-
-export async function getDetailPlace(id) {
-  const endpoint = "/Place/Detail"
-  try {
-    const res = await goongRequest.get(endpoint, {
-      params: {
-        place_id: id,
-        api_key: GOONG_API_KEY,
-      },
-    })
-
-    const { name, formatted_address, place_id, geometry, types } =
-      res.data.result
-
-    return {
-      name,
-      formatted_address,
-      place_id,
-      types,
-      location: geometry.location,
-    }
-  } catch (error) {
-    console.log(error)
-    return {}
   }
 }

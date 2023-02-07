@@ -1,7 +1,9 @@
 import axios from "axios"
+import axiosInherit from "axios-inherit"
 
 function getPlaceAxiosInstance() {
-  const placeRequest = axios.create({
+  const inheritedAxios = axiosInherit(axios)
+  const placeRequest = inheritedAxios.create({
     baseURL: "http://localhost:8080/places",
     timeout: 1000,
   })

@@ -1,30 +1,51 @@
-import { Wrapper, Status } from '@googlemaps/react-wrapper'
-import Map from './components/Map';
-import { useState } from 'react';
-import PlaceInput from './components/PlaceInput';
-import PlaceSuggestList from './components/PlaceSuggestList';
-import { GOOGLE_MAP_API_KEY } from './config/google_api_key';
+import { Container } from "react-bootstrap"
+import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom"
 
-const render = (status) => {
-	const handler = {
-		[Status.LOADING]: () => <h1>Loading</h1>,
-		[Status.FAILURE]: () => <h1>There is an error occured</h1>,
-		[Status.SUCCESS]: () => <h1>Success</h1>
-	}
+import Login from "./pages/LoginPage/"
+import RegisterPage from "./pages/RegisterPage"
+import MapPage from "./pages/MapPage/"
+import PlaceDetailPage, {
+  loader as placeDetailLoader,
+} from "./pages/PlaceDetailPage"
+import configAxios from "./config/axiosConfig"
+import MapLayout from "./layouts/MapLayout/MapLayout"
 
-	return handler[status]()
-};
+configAxios()
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <MapLayout />,
+    children: [
+      {
+        index: true,
+      },
+      {
+        path: "place/:query/:placeId",
+        element: <PlaceDetailPage />,
+        loader: placeDetailLoader,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
+])
 
 function App() {
-	const [center, setCenter] = useState({ lat: -34.397, lng: 150.644 })
-
-	return (
-		<Wrapper apiKey={GOOGLE_MAP_API_KEY} render={render} libraries={["places"]}>
-			<PlaceInput setCenter={setCenter}/>
-			<PlaceSuggestList />
-			<Map center={center} />
-		</Wrapper>
-	);
+  return <RouterProvider router={router} />
 }
 
-export default App;
+function DefaultLayout() {
+  return (
+    <Container fluid className="vh-100 p-0">
+      <Outlet />
+    </Container>
+  )
+}
+
+export default App

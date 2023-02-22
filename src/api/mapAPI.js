@@ -1,6 +1,5 @@
 import goongJs from "@goongmaps/goong-js"
 import { GOONG_API_KEY, GOONG_MAPTILES_KEY } from "../config/key"
-import PlaceInfo from "../components/PlaceInfo"
 
 goongJs.accessToken = GOONG_MAPTILES_KEY
 

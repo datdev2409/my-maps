@@ -6,15 +6,15 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "@goongmaps/goong-js/dist/goong-js.css"
 // import "./index.css"
 import { MapContextProvider } from "./context/mapContext"
-import { AuthContextProvider } from "./context/authContext"
+import { UserContextProvider } from "./context/userContext"
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <React.StrictMode>
     <MapContextProvider>
-      <AuthContextProvider>
+      <UserContextProvider>
         <App />
-      </AuthContextProvider>
+      </UserContextProvider>
     </MapContextProvider>
   </React.StrictMode>
 )

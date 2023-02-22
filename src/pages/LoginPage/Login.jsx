@@ -1,62 +1,65 @@
-import React, { useEffect, useRef, useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { login } from "../../services/authService"
+import React, { useEffect } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
-  useAuthContext,
+  LoginFail,
   LoginStart,
   LoginSuccess,
-} from "../../context/authContext"
+  useUserContext,
+} from "../../context/userContext"
+import axios from "axios"
+import { Alert } from "react-bootstrap"
+import useRedirectPrevious from "../../hooks/useRedirectPrevious"
+
+async function login(email, password) {
+  if (!email || !password) throw new Error("Invalid email or password")
+  const URL = "http://localhost:8000/api/auth/login"
+  const res = await axios.post(URL, { email, password })
+  return res.data
+}
 
 function Login() {
-  const emailRef = useRef(null)
-  const passwordRef = useRef(null)
-  const [error, setError] = useState(null)
-  const { dispatch, isFetching, user } = useAuthContext()
-  let location = useLocation()
-  let navigate = useNavigate()
-
-  console.log(localStorage.getItem("access_token"))
-  console.log(localStorage.getItem("user"))
-
-  let from = location.state?.from?.pathname || "/"
+  const { error, dispatch } = useUserContext()
 
   async function handleSubmit(e) {
     e.preventDefault()
     dispatch(LoginStart())
-    console.log("email: ", emailRef.current.value)
-    console.log("password: ", passwordRef.current.value)
+    const fromData = new FormData(e.target)
+    const data = Object.fromEntries(fromData.entries())
 
     try {
-      const email = emailRef.current.value
-      const password = passwordRef.current.value
-      const res = await login(email, password)
-
-      dispatch(LoginSuccess(res))
-    } catch (error) {
-      console.log(error)
-      setError(error.response.data.message)
+      const { email, password } = data
+      const { user, token } = await login(email, password)
+      dispatch(LoginSuccess(user, token))
+    } catch (err) {
+      if (err.response) {
+        dispatch(LoginFail(err.response.data.message))
+      } else dispatch(LoginFail(err.message))
     }
   }
 
-  useEffect(() => {
-    if (user) {
-      navigate(from, { replace: true })
-    }
-  }, [user])
+  useRedirectPrevious()
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <p>{error}</p>}
+      <h1>Login</h1>
+      {error}
       <div>
         <label htmlFor="email">Email</label>
-        <input ref={emailRef} id="email" name="email" />
+        <input id="email" name="email" />
       </div>
       <div>
         <label htmlFor="password">Password</label>
-        <input ref={passwordRef} id="password" name="password" />
+        <input id="password" name="password" />
       </div>
 
       <button type="submit">Login</button>
+
+      <Alert variant="dark">
+        Don't have an account.
+        <Alert.Link>
+          <Link to="/register">Register</Link>
+        </Alert.Link>
+      </Alert>
     </form>
   )
 }

@@ -13,7 +13,7 @@ export default function SuggestionItem({
   const { main_text, secondary_text } = structured_formatting
 
   function handleClick() {
-    navigate(`/place/${description}/${place_id}`)
+    navigate(`/place/${place_id}`)
     console.log(place_id)
   }
 

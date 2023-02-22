@@ -1,55 +1,46 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useReducer, useRef, useState } from "react"
 import { InputGroup, Form, Spinner } from "react-bootstrap"
 import useDeboucing from "../../hooks/useDeboucing"
 import { getAutocompleteData } from "../../services/searchService"
 import SuggestionList from "./SuggestionList"
-import { CheckLg, Search as SearchIcon } from "react-bootstrap-icons"
+import { Search as SearchIcon } from "react-bootstrap-icons"
 import styles from "./Search.module.css"
 import useClickOutside from "../../hooks/useClickOutside"
-import { useParams } from "react-router-dom"
+import {
+  initialState,
+  reducer,
+  LoadStart,
+  LoadSuccess,
+  CLEAR,
+  HideHint,
+  ShowHint,
+} from "./Search.helper"
 
 export default function Search() {
   const [input, setInput] = useState("")
   const debounceValue = useDeboucing(input, 500)
-  const [suggestions, setSuggestions] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [isAutocompleteOpen, setAutocompleteOpen] = useState(false)
+
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const { loading, showHint, suggestions } = state
+
   const searchRef = useRef(null)
   const inputRef = useRef(null)
-  const { query } = useParams()
-
-  useEffect(() => {
-    if (query) setInput(query)
-  }, [query])
 
   useClickOutside(searchRef, () => {
-    setAutocompleteOpen(false)
+    dispatch(HideHint())
   })
 
-  const isInputFocus = () => {
-    return inputRef.current === document.activeElement
-  }
-
-  // Handle open and close automcomplete
   useEffect(() => {
     if (!debounceValue) {
-      setSuggestions([])
-      setAutocompleteOpen(false)
+      dispatch(CLEAR())
       return
     }
 
-    if (!isInputFocus()) {
-      setAutocompleteOpen(false)
-      return
-    }
-
-    setLoading(true)
+    dispatch(LoadStart())
     getAutocompleteData(debounceValue).then(data => {
-      setSuggestions(data)
-      setLoading(false)
-      setAutocompleteOpen(true)
+      dispatch(LoadSuccess(data))
     })
-  }, [debounceValue, document.activeElement])
+  }, [debounceValue])
 
   return (
     <div ref={searchRef} className={styles.container}>
@@ -65,12 +56,12 @@ export default function Search() {
           placeholder="Search on map"
           value={input}
           onChange={e => setInput(e.target.value)}
-          onFocus={e => setAutocompleteOpen(true)}
+          onFocus={e => dispatch(ShowHint())}
           ref={inputRef}
         />
       </InputGroup>
 
-      {isAutocompleteOpen && <SuggestionList data={suggestions} />}
+      {showHint && <SuggestionList data={suggestions} />}
     </div>
   )
 }

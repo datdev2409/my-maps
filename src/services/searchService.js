@@ -2,21 +2,21 @@ import axios from "axios"
 import { GOONG_API_KEY } from "../config/key"
 
 const goongRequest = axios.create({
-  baseURL: "https://rsapi.goong.io",
+  baseURL: "http://localhost:8000/api/places",
   timeout: 1000,
 })
 
 export async function getAutocompleteData(query, limit = 5) {
-  const endpoint = "/Place/AutoComplete"
+  const endpoint = "/"
   try {
-    const data = await goongRequest.get(endpoint, {
+    const res = await goongRequest.get(endpoint, {
       params: {
-        input: query,
+        q: query,
         limit,
         api_key: GOONG_API_KEY,
       },
     })
-    return data?.data?.predictions || []
+    return res?.data?.predictions || []
   } catch (error) {
     console.log(error)
     return []
